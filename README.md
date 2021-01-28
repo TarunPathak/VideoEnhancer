@@ -12,3 +12,16 @@ Below are some screenshots:
 ![Train](https://github.com/TarunPathak/VideoEnhancer/blob/main/screenshots/Video%20Enhancer%2028-01-2021%2011_30_38.png)
 ![Train](https://github.com/TarunPathak/VideoEnhancer/blob/main/screenshots/Video%20Enhancer%2028-01-2021%2011_36_03.png)
 ![Arrival Indicator](https://github.com/TarunPathak/VideoEnhancer/blob/main/screenshots/Video%20Enhancer%2028-01-2021%2011_36_24.png)
+
+## Download
+
+A compiled exe is available for windows. Below is the link:
+[For Windows ](https://github.com/TarunPathak/VideoEnhancer/releases/tag/win_version_1.0)
+ 
+## Credits
+
+The project utilizes many libraries available in Python ecosystem. Notable ones are listed below:
+
+ - OpenCV
+ - VidGear
+ - MoviePy
