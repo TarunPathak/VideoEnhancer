@@ -10,3 +10,5 @@ It uses computer vision techniques to process video frames - making a visible di
 Below are some screenshots:
 
 ![Train](https://github.com/TarunPathak/VideoEnhancer/blob/main/screenshots/Video%20Enhancer%2028-01-2021%2011_30_38.png)
+![Train](https://github.com/TarunPathak/VideoEnhancer/blob/main/screenshots/Video%20Enhancer%2028-01-2021%2011_36_03.png)
+![Arrival Indicator](https://github.com/TarunPathak/VideoEnhancer/blob/main/screenshots/Video%20Enhancer%2028-01-2021%2011_36_24.png)
