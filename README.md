@@ -25,3 +25,8 @@ The project utilizes many libraries available in Python ecosystem. Notable ones 
  - OpenCV
  - VidGear
  - MoviePy
+
+
+## Suggestions/Pull Requests
+
+Will be happy for any suggestions. Pull requests are welcome.
