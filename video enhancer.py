@@ -10,7 +10,7 @@ from PyQt5.QtGui import QPixmap
 from vidgear.gears import WriteGear
 from PyQt5.Qt import QIcon, Qt, QImage
 from scipy.ndimage.filters import median_filter
-import sys, utils, cv2, numpy as np, moviepy.editor as mp, os, uuid, imutils
+import sys, utils, cv2, numpy as np, moviepy.editor as mp, os, uuid
 from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QLabel, QGroupBox, QPushButton, QSizePolicy, QCheckBox
 
 #variables
@@ -151,8 +151,6 @@ class Application(QWidget):
 
     #function to resize and convert opencv image to pixmap
     def __to_pixmap__(self, image):
-        #resizing image as per label height
-        image = imutils.resize(image, height=int(self.label_height))
 
         #converting to pixmap
         img = QImage(image.data, image.shape[1], image.shape[0], QImage.Format_RGB888).rgbSwapped()
@@ -224,7 +222,7 @@ class Application(QWidget):
             #frame
             ret, frame = cap.read()
 
-            if ret == True:
+            if ret == True and not frame is None:
 
                 #updating frame counter
                 self.frame_counter_label.setText(f"\tFrame <b>{counter}</b> of <b>{frame_count}</b>")
