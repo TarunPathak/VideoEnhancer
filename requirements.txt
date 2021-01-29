@@ -55,9 +55,6 @@ rsa==4.7
 scipy==1.5.4
 six==1.15.0
 streamlink==2.0.0
-tensorboard==2.0.2
-tensorflow==2.0.0
-tensorflow-estimator==2.0.1
 termcolor==1.1.0
 tqdm==4.56.0
 typing-extensions==3.7.4.3

@@ -5,13 +5,15 @@
 ##
 
 #importing libraries
+from shutil import copyfile
 from datetime import datetime
 from PyQt5.QtGui import QPixmap
 from vidgear.gears import WriteGear
 from PyQt5.Qt import QIcon, Qt, QImage
+import sys, utils, cv2, numpy as np, os, uuid
 from scipy.ndimage.filters import median_filter
-import sys, utils, cv2, numpy as np, moviepy.editor as mp, os, uuid
-from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QLabel, QGroupBox, QPushButton, QSizePolicy, QCheckBox
+from moviepy.video.io.VideoFileClip import VideoFileClip
+from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QLabel, QGroupBox, QPushButton, QSizePolicy, QCheckBox, QMessageBox
 
 #variables
 app_path = utils.get_application_path()
@@ -136,7 +138,7 @@ class Application(QWidget):
     #function to extract audio
     def __extract_audio__(self):
 
-        clip = mp.VideoFileClip(self.file_path)
+        clip = VideoFileClip(self.file_path)
         clip.audio.write_audiofile(f"{self.temp_dir}\\audio.mp3")
 
 
@@ -289,7 +291,18 @@ class Application(QWidget):
                    "png", "-disposition:v:1", "attached_pic", f"{self.temp_dir}\\{self.file_name}{self.file_extension}"]
         writer.execute_ffmpeg_cmd(command)
 
-        print('done')
+        #copying the file
+        src = f"{self.temp_dir}\\{self.file_name}{self.file_extension}"
+        dest = f"{os.path.dirname(self.file_path)}\\{self.file_name}_video_enhancer{self.file_extension}"
+        copyfile(src, dest)
+
+        #notifying user
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+        msg.setWindowTitle('Information')
+        msg.setInformativeText('Done!\nFile has been saved in source folder.')
+        msg.exec_()
+
 
 #main
 if __name__ == '__main__':
