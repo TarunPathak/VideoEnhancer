@@ -5,12 +5,12 @@
 ##
 
 #importing libraries
-from shutil import copyfile
 from datetime import datetime
 from PyQt5.QtGui import QPixmap
 from vidgear.gears import WriteGear
+from shutil import copyfile, rmtree
 from PyQt5.Qt import QIcon, Qt, QImage
-import sys, utils, cv2, numpy as np, os, uuid
+import sys, utils, cv2, numpy as np, os, uuid, imutils
 from scipy.ndimage.filters import median_filter
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QLabel, QGroupBox, QPushButton, QSizePolicy, QCheckBox, QMessageBox
@@ -235,6 +235,18 @@ class Application(QWidget):
 
                 #sharpening image
                 modified_frame = self.__sharpen__(frame, sigma=1)
+                sharpen_psnr = cv2.PSNR(frame, modified_frame)
+
+                #bilateral filter to reduce noise and smoothen image
+                #the filter keeps edges intact
+                #only implemented if psnr is high
+                #higher psnr = better image quality
+                bf_frame = cv2.bilateralFilter(modified_frame, 9, 50, 50)
+                bf_psnr = cv2.PSNR(modified_frame, bf_frame)
+
+                if bf_psnr > sharpen_psnr:
+                    modified_frame = bf_frame
+
 
                 #displaying frames
                 self.actual_img_label.setPixmap(self.__to_pixmap__(frame))
@@ -295,6 +307,9 @@ class Application(QWidget):
         src = f"{self.temp_dir}\\{self.file_name}{self.file_extension}"
         dest = f"{os.path.dirname(self.file_path)}\\{self.file_name}_video_enhancer{self.file_extension}"
         copyfile(src, dest)
+
+        #deleting temp directory
+        rmtree(self.temp_dir, ignore_errors=True)
 
         #notifying user
         msg = QMessageBox()

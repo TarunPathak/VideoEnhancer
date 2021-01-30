@@ -3,7 +3,7 @@
 #importing libraries
 from PyQt5 import QtWidgets
 from datetime import datetime
-import sys, os, winshell, numpy as np
+import sys, os, winshell
 from PyQt5.QtWidgets import QFileDialog
 
 #function to get screen size
@@ -24,14 +24,6 @@ def get_video():
     return QFileDialog.getOpenFileName(None, 'Select Video', winshell.desktop(), 'Videos (*.mp4)')[0]
 
 
-#function to calculate signal to noise ratio
-def signaltonoise(a, axis=0, ddof=0):
-    a = np.asanyarray(a)
-    m = a.mean(axis)
-    sd = a.std(axis=axis, ddof=ddof)
-    return np.where(sd == 0, 0, m/sd)
-
-
 #function to calculate eta
 def get_eta(start_time, frames_completed, remaining_frames):
 
@@ -50,6 +42,3 @@ def get_eta(start_time, frames_completed, remaining_frames):
 
     #returning
     return "%d h:%02d m:%02d s" % (hour, min, sec)
-
-
-
