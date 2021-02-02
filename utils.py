@@ -24,6 +24,11 @@ def get_video():
     return QFileDialog.getOpenFileName(None, 'Select Video', winshell.desktop(), 'Videos (*.mp4)')[0]
 
 
+#function to select folder
+def get_folder():
+    return QFileDialog.getExistingDirectory(None, 'Select Folder', winshell.desktop())
+
+
 #function to calculate eta
 def get_eta(start_time, frames_completed, remaining_frames):
 

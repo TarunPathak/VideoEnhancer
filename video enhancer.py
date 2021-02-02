@@ -7,10 +7,11 @@
 #importing libraries
 from datetime import datetime
 from PyQt5.QtGui import QPixmap
+from dialogs import EnhancerDialog
 from vidgear.gears import WriteGear
 from shutil import copyfile, rmtree
 from PyQt5.Qt import QIcon, Qt, QImage
-import sys, utils, cv2, numpy as np, os, uuid, imutils
+import sys, utils, cv2, numpy as np, os, uuid
 from scipy.ndimage.filters import median_filter
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QLabel, QGroupBox, QPushButton, QSizePolicy, QCheckBox, QMessageBox
@@ -20,7 +21,7 @@ app_path = utils.get_application_path()
 app_icon = f"{app_path}\\assets\\icons\\app_icon.ico"
 
 #UI
-class Application(QWidget):
+class VideoEnhancer(QWidget):
 
     #init
     def __init__(self):
@@ -47,21 +48,29 @@ class Application(QWidget):
 
         #ui dimensions
         self.label_width = (self.geom.width()-50)/2
-        self.label_height = self.geom.height() * 0.78
+        self.label_height = self.geom.height() * 0.85
 
         #ui elements
         self.layout = QGridLayout()
+        self.layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.layout)
+
+        self.actual_label = QLabel('<b>Actual<b>')
+        self.actual_label.setFixedHeight(15)
+        self.layout.addWidget(self.actual_label, 0, 0, 1, 1, Qt.AlignTop)
+        self.processed_label = QLabel('<b>Processed<b>')
+        self.processed_label.setFixedHeight(15)
+        self.layout.addWidget(self.processed_label, 0, 1, 1, 1, Qt.AlignTop)
 
         self.actual_img_label = QLabel()
         self.actual_img_label.setStyleSheet("QLabel { background-color : #D3D3D3;}");
         self.actual_img_label.setFixedSize(self.label_width, self.label_height)
-        self.layout.addWidget(self.actual_img_label, 0, 0, 1, 1, Qt.AlignTop)
+        self.layout.addWidget(self.actual_img_label, 1, 0, 1, 1, Qt.AlignTop)
 
         self.processed_img_label = QLabel()
         self.processed_img_label.setStyleSheet("QLabel { background-color : #D3D3D3;}");
         self.processed_img_label.setFixedSize(self.label_width, self.label_height)
-        self.layout.addWidget(self.processed_img_label, 0, 1, 1, 1, Qt.AlignTop)
+        self.layout.addWidget(self.processed_img_label, 1, 1, 1, 1, Qt.AlignTop)
 
         self.gb = QGroupBox()
         self.gb_layout = QGridLayout()
@@ -74,35 +83,22 @@ class Application(QWidget):
         self.browse_pb.clicked.connect(lambda: self.__get_file__())
         self.browse_pb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.gb_layout.addWidget(self.browse_pb, 0, 1, 1, 1)
-        self.gb_layout.addWidget(QLabel(), 0, 2, 1, 1)
-        self.file_label = QLabel()
-        self.gb_layout.addWidget(self.file_label, 0, 3, 1, 1)
-        self.gb_layout.addWidget(QLabel(), 0, 4, 1, 1)
-        self.frame_counter_label = QLabel()
-        self.gb_layout.addWidget(self.frame_counter_label, 0, 5, 1, 1)
-        self.gb_layout.addWidget(QLabel(), 0, 6, 1, 1)
-        self.eta_label = QLabel()
-        self.gb_layout.addWidget(self.eta_label, 0, 7, 1, 1)
-
-        self.pref_label = QLabel('\nPreferences\n')
-        self.gb_layout.addWidget(self.pref_label, 1, 0, 1, 2)
-        self.retain_audio_cb = QCheckBox('Retain Audio')
-        self.retain_audio_cb.setChecked(True)
-        self.gb_layout.addWidget(self.retain_audio_cb, 2, 0, 1, 2)
-
-        self.gb_layout.addWidget(QLabel(), 3, 0, 1, 2)
-
         self.start_pb = QPushButton('Start')
         self.start_pb.setEnabled(False)
         self.start_pb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.start_pb.clicked.connect(lambda: self.__process__())
-        self.gb_layout.addWidget(self.start_pb, 4, 0, 1, 1)
-        self.pause_pb = QPushButton('Pause')
-        self.pause_pb.setEnabled(False)
-        self.pause_pb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.gb_layout.addWidget(self.pause_pb, 4, 1, 1, 1)
+        self.gb_layout.addWidget(self.start_pb, 0, 2, 1, 1)
+        self.gb_layout.addWidget(QLabel(), 0, 3, 1, 1)
+        self.file_label = QLabel()
+        self.gb_layout.addWidget(self.file_label, 0, 4, 1, 1)
+        self.gb_layout.addWidget(QLabel(), 0, 5, 1, 1)
+        self.frame_counter_label = QLabel()
+        self.gb_layout.addWidget(self.frame_counter_label, 0, 6, 1, 1)
+        self.gb_layout.addWidget(QLabel(), 0, 7, 1, 1)
+        self.eta_label = QLabel()
+        self.gb_layout.addWidget(self.eta_label, 0, 8, 1, 1)
 
-        self.layout.addWidget(self.gb, 1, 0, 1, 2, Qt.AlignTop)
+        self.layout.addWidget(self.gb, 2, 0, 1, 2, Qt.AlignTop)
 
 
     #function to select video file
@@ -123,16 +119,10 @@ class Application(QWidget):
             if self.start_pb.isEnabled():
                 self.start_pb.setEnabled(False)
 
-            if self.pause_pb.isEnabled():
-                self.pause_pb.setEnabled(False)
-
         else:
 
             if not self.start_pb.isEnabled():
                 self.start_pb.setEnabled(True)
-
-            if not self.pause_pb.isEnabled():
-                self.pause_pb.setEnabled(True)
 
 
     #function to extract audio
@@ -196,13 +186,16 @@ class Application(QWidget):
     #function to process the file
     def __process__(self):
 
+        #dialog
+        self.preferences = EnhancerDialog.showDialog(self)
+
         #creating temp directory
         self.temp_dir = f"{app_path}\\processing\\{uuid.uuid4().hex}"
         os.mkdir(self.temp_dir)
 
         #extracting audio
         #if audio is to be retained
-        if self.retain_audio_cb.isChecked():
+        if self.preferences['Retain Audio']:
             self.__extract_audio__()
 
         #video capture object
@@ -271,7 +264,7 @@ class Application(QWidget):
 
         #using FFmpeg to stitch audio back
         #if specified in setting
-        if self.retain_audio_cb.isChecked():
+        if self.preferences['Retain Audio']:
 
             ffmpeg_command = \
             [
@@ -305,7 +298,7 @@ class Application(QWidget):
 
         #copying the file
         src = f"{self.temp_dir}\\{self.file_name}{self.file_extension}"
-        dest = f"{os.path.dirname(self.file_path)}\\{self.file_name}_video_enhancer{self.file_extension}"
+        dest = f"{self.preferences['Output Folder']}\\{self.file_name}_video_enhancer{self.file_extension}"
         copyfile(src, dest)
 
         #deleting temp directory
@@ -315,7 +308,8 @@ class Application(QWidget):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
         msg.setWindowTitle('Information')
-        msg.setInformativeText('Done!\nFile has been saved in source folder.')
+        msg.setWindowIcon(QIcon(app_icon))
+        msg.setText('Done!\nFile has been saved in source folder.')
         msg.exec_()
 
 
@@ -324,5 +318,5 @@ if __name__ == '__main__':
 
     #creating application
     app = QApplication(sys.argv)
-    widget = Application()
+    widget = VideoEnhancer()
     sys.exit(app.exec_())
