@@ -19,6 +19,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QLabel, QGroupBo
 #variables
 app_path = utils.get_application_path()
 app_icon = f"{app_path}\\assets\\icons\\app_icon.ico"
+ffmpeg_path = f"{app_path}\\assets\\ffmpeg\\bin\\"
 
 #UI
 class VideoEnhancer(QWidget):
@@ -207,7 +208,7 @@ class VideoEnhancer(QWidget):
 
         #video writer object
         output_params = {"-vcodec": "libx264", "-crf": 0, "-preset": "fast"}
-        writer = WriteGear(output_filename=f'{self.temp_dir}\\{self.file_name}_processed{self.file_extension}', logging=True, **output_params)
+        writer = WriteGear(output_filename=f'{self.temp_dir}\\{self.file_name}_processed{self.file_extension}', custom_ffmpeg=ffmpeg_path, logging=True, **output_params)
 
         #processing till end of frame
         start_time = datetime.now()

@@ -55,7 +55,7 @@ class EnhancerDialog(QDialog):
         self.choose_folder_pb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.layout.addWidget(self.choose_folder_pb, 0, 2, 1, 1)
 
-        self.audio_preferences_label = QLabel('<br><b>Audio<b><br>')
+        self.audio_preferences_label = QLabel('<br><b>Audio<b><br><hr>')
         self.layout.addWidget(self.audio_preferences_label, 1, 0, 1, 1)
         self.retain_audio_cb = QCheckBox('Retain Audio')
         self.retain_audio_cb.setChecked(True)
