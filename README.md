@@ -7,8 +7,6 @@ It uses computer vision techniques to process video frames - making a visible di
 
 ## Screenshots
 
-Below are some screenshots:  
-
 Market Banners  
 
 ![Market](https://github.com/TarunPathak/VideoEnhancer/blob/main/screenshots/Video%20Enhancer%2006-02-2021%2017_34_26.png)
@@ -20,7 +18,7 @@ The Trucks
 
 ## Download
 
-A compiled exe is available for windows. Below is the link:
+A compiled exe is available for windows. Below is the link:  
 [For Windows ](https://github.com/TarunPathak/VideoEnhancer/releases/tag/win_version_1.0)
  
 ## Credits
@@ -30,6 +28,7 @@ The project utilizes many libraries available in Python ecosystem. Notable ones 
  - OpenCV
  - VidGear
  - MoviePy
+ - FFMPEG
 
 
 ## Suggestions/Pull Requests
