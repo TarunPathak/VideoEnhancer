@@ -7,11 +7,13 @@ It uses computer vision techniques to process video frames - making a visible di
 
 ## Screenshots
 
-Below are some screenshots:
+Below are some screenshots:  
 
-![Train](https://github.com/TarunPathak/VideoEnhancer/blob/main/screenshots/Video%20Enhancer%2028-01-2021%2011_30_38.png)
-![Train](https://github.com/TarunPathak/VideoEnhancer/blob/main/screenshots/Video%20Enhancer%2028-01-2021%2011_36_03.png)
-![Arrival Indicator](https://github.com/TarunPathak/VideoEnhancer/blob/main/screenshots/Video%20Enhancer%2028-01-2021%2011_36_24.png)
+Market Banners
+![Market](https://github.com/TarunPathak/VideoEnhancer/blob/main/screenshots/Video%20Enhancer%2006-02-2021%2017_34_26.png)
+The Trucks
+![The Truck](https://github.com/TarunPathak/VideoEnhancer/blob/main/screenshots/Video%20Enhancer%2006-02-2021%2017_37_58.png)
+![One More](https://github.com/TarunPathak/VideoEnhancer/blob/main/screenshots/Video%20Enhancer%2006-02-2021%2017_39_38.png)
 
 ## Download
 
