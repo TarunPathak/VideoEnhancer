@@ -15,7 +15,7 @@ app_path = utils.get_application_path()
 app_icon = f"{app_path}\\assets\\icons\\app_icon.ico"
 
 #custom dialog class
-class EnhancerDialog(QDialog):
+class PreferenceDialog(QDialog):
 
     #init
     def __init__(self, parent=None):
@@ -33,7 +33,7 @@ class EnhancerDialog(QDialog):
         self.__build_ui__()
 
         #setting size
-        self.setFixedSize(self.sizeHint().width() + 50, self.sizeHint().height() + 10)
+        self.setFixedSize(self.sizeHint().width() + 20, self.sizeHint().height() + 10)
 
 
     #function to build ui
@@ -61,10 +61,15 @@ class EnhancerDialog(QDialog):
         self.retain_audio_cb.setChecked(True)
         self.layout.addWidget(self.retain_audio_cb, 2, 0, 1, 1)
 
+        self.color_preferences_label = QLabel('<br><b>Color<b><br><hr>')
+        self.layout.addWidget(self.color_preferences_label, 3, 0, 1, 1)
+        self.bnw_cb = QCheckBox('Convert to Black && White')
+        self.layout.addWidget(self.bnw_cb, 4, 0, 1, 1)
+
         self.proceed_pb = QPushButton('Proceed')
         self.proceed_pb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.proceed_pb.clicked.connect(lambda: self.__submit__())
-        self.layout.addWidget(self.proceed_pb, 3, 0, 1, 3, Qt.AlignCenter)
+        self.layout.addWidget(self.proceed_pb, 5, 0, 1, 3, Qt.AlignCenter)
 
 
     #function to submit data
@@ -95,4 +100,5 @@ class EnhancerDialog(QDialog):
         dialog = cls(parent=parent)
         dialog.exec_()
         return {'Output Folder': dialog.output_folder_le.text(),
-                'Retain Audio': dialog.retain_audio_cb.isChecked()}
+                'Retain Audio': dialog.retain_audio_cb.isChecked(),
+                'BnW': dialog.bnw_cb.isChecked()}

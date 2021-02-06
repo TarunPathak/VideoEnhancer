@@ -7,7 +7,7 @@
 #importing libraries
 from datetime import datetime
 from PyQt5.QtGui import QPixmap
-from dialogs import EnhancerDialog
+from dialogs import PreferenceDialog
 from vidgear.gears import WriteGear
 from shutil import copyfile, rmtree
 from PyQt5.Qt import QIcon, Qt, QImage
@@ -146,7 +146,12 @@ class VideoEnhancer(QWidget):
     def __to_pixmap__(self, image):
 
         #converting to pixmap
-        img = QImage(image.data, image.shape[1], image.shape[0], QImage.Format_RGB888).rgbSwapped()
+        #based on number of channels
+        if len(image.shape) == 3:
+            img = QImage(image.data, image.shape[1], image.shape[0], QImage.Format_RGB888).rgbSwapped()
+        else:
+            img = QImage(image.data, image.shape[1], image.shape[0], QImage.Format_Grayscale8)
+
         return QPixmap.fromImage(img)
 
 
@@ -188,7 +193,7 @@ class VideoEnhancer(QWidget):
     def __process__(self):
 
         #dialog
-        self.preferences = EnhancerDialog.showDialog(self)
+        self.preferences = PreferenceDialog.showDialog(self)
 
         #creating temp directory
         self.temp_dir = f"{app_path}\\processing\\{uuid.uuid4().hex}"
@@ -221,6 +226,7 @@ class VideoEnhancer(QWidget):
             if ret == True and not frame is None:
 
                 #updating frame counter
+                counter = counter + 1
                 self.frame_counter_label.setText(f"\tFrame <b>{counter}</b> of <b>{frame_count}</b>")
 
                 #updating eta
@@ -241,6 +247,10 @@ class VideoEnhancer(QWidget):
                 if bf_psnr > sharpen_psnr:
                     modified_frame = bf_frame
 
+                #converting to B&W
+                #if specified by user in preferences
+                if self.preferences['BnW']:
+                    modified_frame = cv2.cvtColor(modified_frame, cv2.COLOR_BGR2GRAY)
 
                 #displaying frames
                 self.actual_img_label.setPixmap(self.__to_pixmap__(frame))
@@ -251,9 +261,6 @@ class VideoEnhancer(QWidget):
 
                 #write the flipped frame
                 writer.write(modified_frame)
-
-                #incrementing counter
-                counter = counter + 1
 
             else:
                 break
