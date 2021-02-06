@@ -9,9 +9,12 @@ It uses computer vision techniques to process video frames - making a visible di
 
 Below are some screenshots:  
 
-Market Banners
+Market Banners  
+
 ![Market](https://github.com/TarunPathak/VideoEnhancer/blob/main/screenshots/Video%20Enhancer%2006-02-2021%2017_34_26.png)
-The Trucks
+
+The Trucks  
+
 ![The Truck](https://github.com/TarunPathak/VideoEnhancer/blob/main/screenshots/Video%20Enhancer%2006-02-2021%2017_37_58.png)
 ![One More](https://github.com/TarunPathak/VideoEnhancer/blob/main/screenshots/Video%20Enhancer%2006-02-2021%2017_39_38.png)
 
