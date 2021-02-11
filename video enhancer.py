@@ -226,12 +226,14 @@ class VideoEnhancer(QWidget):
             if ret == True and not frame is None:
 
                 #updating frame counter
-                counter = counter + 1
                 self.frame_counter_label.setText(f"\tFrame <b>{counter}</b> of <b>{frame_count}</b>")
 
                 #updating eta
                 eta = utils.get_eta(start_time, frames_completed=counter, remaining_frames=frame_count - counter)
                 self.eta_label.setText(f'\tEstimated Time: {eta}')
+
+                #removing noise
+                
 
                 #sharpening image
                 modified_frame = self.__sharpen__(frame, sigma=1)
@@ -261,6 +263,9 @@ class VideoEnhancer(QWidget):
 
                 #write the flipped frame
                 writer.write(modified_frame)
+
+                #incrementing frame count
+                counter = counter + 1
 
             else:
                 break
