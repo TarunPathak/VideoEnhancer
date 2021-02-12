@@ -5,6 +5,7 @@
 ##
 
 #importing libraries
+from time import sleep
 from datetime import datetime
 from PyQt5.QtGui import QPixmap
 from dialogs import PreferenceDialog
@@ -14,7 +15,7 @@ from PyQt5.Qt import QIcon, Qt, QImage
 import sys, utils, cv2, numpy as np, os, uuid
 from scipy.ndimage.filters import median_filter
 from moviepy.video.io.VideoFileClip import VideoFileClip
-from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QLabel, QGroupBox, QPushButton, QSizePolicy, QCheckBox, QMessageBox
+from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QLabel, QGroupBox, QPushButton, QSizePolicy, QSplashScreen, QMessageBox
 
 #variables
 app_path = utils.get_application_path()
@@ -326,10 +327,30 @@ class VideoEnhancer(QWidget):
         msg.exec_()
 
 
+#splash screen
+def splash(app):
+
+    #displaying splash
+    splash_pix = QPixmap(utils.get_application_path() + '\\assets\\icons\\splash.png')
+    splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
+    splash.show()
+
+    for i in range(0,3):
+        sleep(0.6)
+        app.processEvents()
+
+    #closing splash
+    splash.close()
+
 #main
 if __name__ == '__main__':
 
     #creating application
     app = QApplication(sys.argv)
+
+    #displaying splash screen
+    splash(app)
+
+    #displaying application
     widget = VideoEnhancer()
     sys.exit(app.exec_())

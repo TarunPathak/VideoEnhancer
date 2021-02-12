@@ -1,9 +1,9 @@
 #code: Tarun Pathak
 
 #importing libraries
+import sys, os, winshell
 from PyQt5 import QtWidgets
 from datetime import datetime
-import sys, os, winshell
 from PyQt5.QtWidgets import QFileDialog
 
 #function to get screen size

@@ -92,7 +92,6 @@ class PreferenceDialog(QDialog):
         self.slider_le.setEnabled(False)
         self.audio_gb_layout.addWidget(self.slider_le, 1, 3, 1, 1)
 
-
         self.color_preferences_label = QLabel('<br><b>Color<b><br><hr>')
         self.layout.addWidget(self.color_preferences_label, 3, 0, 1, 1)
         self.bnw_cb = QCheckBox('Convert to Black && White')
