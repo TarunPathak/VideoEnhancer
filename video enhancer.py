@@ -134,15 +134,6 @@ class VideoEnhancer(QWidget):
         clip.audio.write_audiofile(f"{self.temp_dir}\\audio.mp3")
 
 
-    #function to equalize histogram
-    def __equalize_histogram__(self, image):
-
-        img_yuv = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(2, 2))
-        img_yuv[:, :, 0] = clahe.apply(img_yuv[:, :, 0])
-        return cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
-
-
     #function to resize and convert opencv image to pixmap
     def __to_pixmap__(self, image):
 
@@ -190,6 +181,54 @@ class VideoEnhancer(QWidget):
         return output
 
 
+    #function to retain audio
+    def __retain_audio__(self):
+
+        command = \
+            [
+                "-y",
+                "-i",
+                f"{self.temp_dir}\\{self.file_name}_processed{self.file_extension}",
+                "-i",
+                f"{self.temp_dir}\\audio.mp3",
+                "-c:v",
+                "copy",
+                "-c:a",
+                "copy",
+                "-map",
+                "0:v:0",
+                "-map",
+                "1:a:0",
+                "-shortest",
+                f"{self.temp_dir}\\{self.file_name}_with_audio{self.file_extension}",
+            ]  # `-y` parameter is to overwrite output file if exists
+
+        self.writer.execute_ffmpeg_cmd(command)
+
+
+    #function to adjust volume
+    def __adjust_volume__(self):
+
+        #adjusting volume
+        src = f"{self.temp_dir}\\{self.file_name}_with_audio{self.file_extension}"
+        dest = f"{self.temp_dir}\\{self.file_name}_volume_adjusted{self.file_extension}"
+
+        amount = int(self.preferences['Audio Level']['Amount'])
+        amount_dict = {-50: .5, -60: .6, -70: .7, -80: .8,
+                       -90: .9, 0: 1, 10: 1.1, 20: 1.2,
+                       30: 1.3, 40: 1.4, 50: 1.5, 60: 1.6,
+                       70: 1.7, 80: 1.8, 90: 1.9, 100: 2}
+
+        command = ["-i", src, "-af", f"""volume={amount_dict[amount]}""", dest]
+        print(command)
+        self.writer.execute_ffmpeg_cmd(command)
+
+        #deleting file
+        #renaming volume adjusted file
+        os.remove(src)
+        os.rename(dest, src)
+
+
     #function to process the file
     def __process__(self):
 
@@ -214,7 +253,7 @@ class VideoEnhancer(QWidget):
 
         #video writer object
         output_params = {"-vcodec": "libx264", "-crf": 0, "-preset": "fast"}
-        writer = WriteGear(output_filename=f'{self.temp_dir}\\{self.file_name}_processed{self.file_extension}', custom_ffmpeg=ffmpeg_path, logging=True, **output_params)
+        self.writer = WriteGear(output_filename=f'{self.temp_dir}\\{self.file_name}_processed{self.file_extension}', custom_ffmpeg=ffmpeg_path, logging=True, **output_params)
 
         #processing till end of frame
         start_time = datetime.now()
@@ -232,9 +271,6 @@ class VideoEnhancer(QWidget):
                 #updating eta
                 eta = utils.get_eta(start_time, frames_completed=counter, remaining_frames=frame_count - counter)
                 self.eta_label.setText(f'\tEstimated Time: {eta}')
-
-                #removing noise
-                
 
                 #sharpening image
                 modified_frame = self.__sharpen__(frame, sigma=1)
@@ -263,7 +299,7 @@ class VideoEnhancer(QWidget):
                 cv2.waitKey(1)
 
                 #write the flipped frame
-                writer.write(modified_frame)
+                self.writer.write(modified_frame)
 
                 #incrementing frame count
                 counter = counter + 1
@@ -273,45 +309,33 @@ class VideoEnhancer(QWidget):
 
         #release everything
         cap.release()
-        writer.close()
+        self.writer.close()
         cv2.destroyAllWindows()
 
         #using FFmpeg to stitch audio back
         #if specified in setting
+        #performing other audio related operations
         if self.preferences['Retain Audio']:
 
-            ffmpeg_command = \
-            [
-                "-y",
-                "-i",
-                f"{self.temp_dir}\\{self.file_name}_processed{self.file_extension}",
-                "-i",
-                f"{self.temp_dir}\\audio.mp3",
-                "-c:v",
-                "copy",
-                "-c:a",
-                "copy",
-                "-map",
-                "0:v:0",
-                "-map",
-                "1:a:0",
-                "-shortest",
-                f"{self.temp_dir}\\{self.file_name}_processed{self.file_extension}",
-            ]  # `-y` parameter is to overwrite output file if exists
+            #retaining audio
+            self.__retain_audio__()
 
-            #execute FFmpeg command
-            writer.execute_ffmpeg_cmd(ffmpeg_command)
+            #adjusting volume
+            #if specified in preferences
+            if self.preferences['Audio Level']['Checked']:
+                self.__adjust_volume__()
+
 
         #adding thumbnail
-        command = ["-y", "-i", f"{self.temp_dir}\\{self.file_name}_processed{self.file_extension}", "-ss", "00:00:05.000", "-vframes", "1", f"{self.temp_dir}\\Thumbnail.png"]
-        writer.execute_ffmpeg_cmd(command)
+        command = ["-y", "-i", f"{self.temp_dir}\\{self.file_name}_with_audio{self.file_extension}", "-ss", "00:00:05.000", "-vframes", "1", f"{self.temp_dir}\\Thumbnail.png"]
+        self.writer.execute_ffmpeg_cmd(command)
 
-        command = ["-i", f"{self.temp_dir}\\{self.file_name}_processed{self.file_extension}", "-i", f"{self.temp_dir}\\Thumbnail.png", "-map", "0", "-map", "1", "-c", "copy", "-c:v:1",
-                   "png", "-disposition:v:1", "attached_pic", f"{self.temp_dir}\\{self.file_name}{self.file_extension}"]
-        writer.execute_ffmpeg_cmd(command)
+        command = ["-i", f"{self.temp_dir}\\{self.file_name}_with_audio{self.file_extension}", "-i", f"{self.temp_dir}\\Thumbnail.png", "-map", "0", "-map", "1", "-c", "copy", "-c:v:1",
+                   "png", "-disposition:v:1", "attached_pic", f"{self.temp_dir}\\{self.file_name}_with_thumbnail{self.file_extension}"]
+        self.writer.execute_ffmpeg_cmd(command)
 
         #copying the file
-        src = f"{self.temp_dir}\\{self.file_name}{self.file_extension}"
+        src = f"{self.temp_dir}\\{self.file_name}_with_thumbnail{self.file_extension}"
         dest = f"{self.preferences['Output Folder']}\\{self.file_name}_video_enhancer{self.file_extension}"
         copyfile(src, dest)
 
