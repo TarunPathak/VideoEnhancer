@@ -66,7 +66,7 @@ class PreferenceDialog(QDialog):
         self.audio_gb_layout = QGridLayout()
         self.audio_gb_layout.setAlignment(Qt.AlignLeft)
         self.audio_gb.setLayout(self.audio_gb_layout)
-        self.layout.addWidget(self.audio_gb, 2, 1, 1, 2)
+        self.layout.addWidget(self.audio_gb, 3, 0, 1, 2)
 
         self.audio_level_cb = QCheckBox(' adjust volume by:\n Negative adjustment results in volume reduction.')
         self.audio_level_cb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -89,15 +89,34 @@ class PreferenceDialog(QDialog):
         self.slider_le.setEnabled(False)
         self.audio_gb_layout.addWidget(self.slider_le, 1, 2, 1, 1)
 
-        self.color_preferences_label = QLabel('<br><b>Color<b><br><hr>')
-        self.layout.addWidget(self.color_preferences_label, 3, 0, 1, 1)
+        self.color_preferences_label = QLabel('<br><b>Video<b><br><hr>')
+        self.layout.addWidget(self.color_preferences_label, 4, 0, 1, 1)
         self.bnw_cb = QCheckBox('Convert to Black && White')
-        self.layout.addWidget(self.bnw_cb, 4, 0, 1, 1)
+        self.layout.addWidget(self.bnw_cb, 5, 0, 1, 1)
+
+        self.compression_label = QLabel('\nCompression\nNote: more compression leads to small video size\nand lower video quality.')
+        self.layout.addWidget(self.compression_label, 6, 0, 1, 2)
+        self.compression_slider = QSlider(Qt.Horizontal)
+        self.compression_slider.setMinimum(0)
+        self.compression_slider.setMaximum(20)
+        self.compression_slider.setValue(5)
+        self.compression_slider.setTickInterval(1)
+        self.compression_slider.setSingleStep(1)
+        self.compression_slider.setPageStep(1)
+        self.compression_slider.setTickPosition(QSlider.TicksBelow)
+        self.compression_slider.valueChanged.connect(lambda: self.compression_le.setText(f"{self.compression_slider.value()}"))
+        self.layout.addWidget(self.compression_slider, 7, 0, 1, 2)
+
+        self.compression_le = QLineEdit()
+        self.compression_le.setEnabled(False)
+        self.compression_le.setFixedWidth(25)
+        self.compression_le.setText(f'{self.compression_slider.value()}')
+        self.layout.addWidget(self.compression_le, 7, 2, 1, 1)
 
         self.proceed_pb = QPushButton('Proceed')
         self.proceed_pb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.proceed_pb.clicked.connect(lambda: self.__submit__())
-        self.layout.addWidget(self.proceed_pb, 5, 0, 1, 3, Qt.AlignCenter)
+        self.layout.addWidget(self.proceed_pb, 8, 0, 1, 3, Qt.AlignCenter)
 
 
     #function to manage widgets
@@ -152,4 +171,5 @@ class PreferenceDialog(QDialog):
                 'Audio Level': {'Checked': dialog.audio_level_cb.isChecked(),
                                 'Amount': dialog.audio_slider.value()
                                 },
-                'BnW': dialog.bnw_cb.isChecked()}
+                'BnW': dialog.bnw_cb.isChecked(),
+                'Compression': dialog.compression_slider.value()}

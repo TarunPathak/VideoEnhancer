@@ -252,7 +252,7 @@ class VideoEnhancer(QWidget):
         frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
         #video writer object
-        output_params = {"-vcodec": "libx264", "-crf": 0, "-preset": "fast"}
+        output_params = {"-vcodec": "libx264", "-crf": int(self.preferences['Compression']), "-preset": "fast"}
         self.writer = WriteGear(output_filename=f'{self.temp_dir}\\{self.file_name}_processed{self.file_extension}', custom_ffmpeg=ffmpeg_path, logging=True, **output_params)
 
         #processing till end of frame
