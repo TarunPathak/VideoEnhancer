@@ -1,4 +1,4 @@
-#code: Tarun Pathak
+#code: Tarun Pathakd
 
 ##
 #credit: icons downloaded from flaticon
@@ -10,6 +10,7 @@ from datetime import datetime
 from PyQt5.QtGui import QPixmap
 from dialogs import PreferenceDialog
 from vidgear.gears import WriteGear
+from vidgear.gears.stabilizer import Stabilizer
 from shutil import copyfile, rmtree
 from PyQt5.Qt import QIcon, Qt, QImage
 import sys, utils, cv2, numpy as np, os, uuid
@@ -79,26 +80,21 @@ class VideoEnhancer(QWidget):
         self.gb_layout.setAlignment(Qt.AlignLeft)
         self.gb.setLayout(self.gb_layout)
 
-        self.open_label = QLabel('Select the video')
+        self.open_label = QLabel('Enhance a video')
         self.gb_layout.addWidget(self.open_label, 0, 0, 1, 1)
-        self.browse_pb = QPushButton('Browse')
-        self.browse_pb.clicked.connect(lambda: self.__get_file__())
-        self.browse_pb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.gb_layout.addWidget(self.browse_pb, 0, 1, 1, 1)
         self.start_pb = QPushButton('Start')
-        self.start_pb.setEnabled(False)
         self.start_pb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.start_pb.clicked.connect(lambda: self.__process__())
-        self.gb_layout.addWidget(self.start_pb, 0, 2, 1, 1)
-        self.gb_layout.addWidget(QLabel(), 0, 3, 1, 1)
+        self.gb_layout.addWidget(self.start_pb, 0, 1, 1, 1)
+        self.gb_layout.addWidget(QLabel(), 0, 2, 1, 1)
         self.file_label = QLabel()
-        self.gb_layout.addWidget(self.file_label, 0, 4, 1, 1)
-        self.gb_layout.addWidget(QLabel(), 0, 5, 1, 1)
+        self.gb_layout.addWidget(self.file_label, 0, 3, 1, 1)
+        self.gb_layout.addWidget(QLabel(), 0, 4, 1, 1)
         self.frame_counter_label = QLabel()
-        self.gb_layout.addWidget(self.frame_counter_label, 0, 6, 1, 1)
-        self.gb_layout.addWidget(QLabel(), 0, 7, 1, 1)
+        self.gb_layout.addWidget(self.frame_counter_label, 0, 5, 1, 1)
+        self.gb_layout.addWidget(QLabel(), 0, 6, 1, 1)
         self.eta_label = QLabel()
-        self.gb_layout.addWidget(self.eta_label, 0, 8, 1, 1)
+        self.gb_layout.addWidget(self.eta_label, 0, 7, 1, 1)
 
         self.layout.addWidget(self.gb, 2, 0, 1, 2, Qt.AlignTop)
 
@@ -114,17 +110,6 @@ class VideoEnhancer(QWidget):
 
         #displaying file path
         self.file_label.setText(f"{self.file_path}")
-
-        #managing start/pause buttons
-        if not len(self.file_path) > 0:
-
-            if self.start_pb.isEnabled():
-                self.start_pb.setEnabled(False)
-
-        else:
-
-            if not self.start_pb.isEnabled():
-                self.start_pb.setEnabled(True)
 
 
     #function to extract audio
@@ -232,6 +217,13 @@ class VideoEnhancer(QWidget):
     #function to process the file
     def __process__(self):
 
+        #selecting file
+        #exiting (if no file is selected)
+        self.__get_file__()
+
+        if self.file_name=='':
+            return
+
         #dialog
         self.preferences = PreferenceDialog.showDialog(self)
 
@@ -246,6 +238,11 @@ class VideoEnhancer(QWidget):
 
         #video capture object
         cap = cv2.VideoCapture(self.file_path)
+
+        #initiate stabilizer object with default parameters
+        #if user selected the option
+        if self.preferences['Enable Stablization']:
+            stab = Stabilizer(smoothing_radius=20, crop_n_zoom=True, border_size=5, logging=True)
 
         #frame count
         counter = 1
@@ -272,8 +269,25 @@ class VideoEnhancer(QWidget):
                 eta = utils.get_eta(start_time, frames_completed=counter, remaining_frames=frame_count - counter)
                 self.eta_label.setText(f'\tEstimated Time: {eta}')
 
+                #copying frame
+                frame_copy = frame
+
+                #stablizing frame
+                #if specified by user
+                if self.preferences['Enable Stablization']:
+
+                    stabilized_frame = stab.stabilize(frame_copy)
+
+                    #wait for stabilizer which still be initializing
+                    if stabilized_frame is None:
+                        continue
+
+                    #replacing frame
+                    frame_copy = stabilized_frame
+
                 #sharpening image
-                modified_frame = self.__sharpen__(frame, sigma=1)
+
+                modified_frame = self.__sharpen__(frame_copy, sigma=1)
                 sharpen_psnr = cv2.PSNR(frame, modified_frame)
 
                 #bilateral filter to reduce noise and smoothen image
