@@ -1,4 +1,4 @@
-#code: Tarun Pathakd
+#code: Tarun Pathak
 
 ##
 #credit: icons downloaded from flaticon
@@ -8,14 +8,15 @@
 from time import sleep
 from datetime import datetime
 from PyQt5.QtGui import QPixmap
+from qtwidgets import AnimatedToggle
 from dialogs import PreferenceDialog
 from vidgear.gears import WriteGear
 from vidgear.gears.stabilizer import Stabilizer
 from shutil import copyfile, rmtree
 from PyQt5.Qt import QIcon, Qt, QImage
-import sys, utils, cv2, numpy as np, os, uuid
 from scipy.ndimage.filters import median_filter
 from moviepy.video.io.VideoFileClip import VideoFileClip
+import sys, utils, cv2, numpy as np, os, uuid, qdarkstyle
 from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QLabel, QGroupBox, QPushButton, QSizePolicy, QSplashScreen, QMessageBox
 
 #variables
@@ -27,10 +28,13 @@ ffmpeg_path = f"{app_path}\\assets\\ffmpeg\\bin\\"
 class VideoEnhancer(QWidget):
 
     #init
-    def __init__(self):
+    def __init__(self, app):
 
         #parent class
         QWidget.__init__(self)
+
+        #app
+        self.app = app
 
         #general properties
         self.setWindowTitle('Video Enhancer')
@@ -51,7 +55,7 @@ class VideoEnhancer(QWidget):
 
         #ui dimensions
         self.label_width = (self.geom.width()-50)/2
-        self.label_height = self.geom.height() * 0.85
+        self.label_height = self.geom.height() * 0.84
 
         #ui elements
         self.layout = QGridLayout()
@@ -86,17 +90,29 @@ class VideoEnhancer(QWidget):
         self.start_pb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.start_pb.clicked.connect(lambda: self.__process__())
         self.gb_layout.addWidget(self.start_pb, 0, 1, 1, 1)
-        self.gb_layout.addWidget(QLabel(), 0, 2, 1, 1)
-        self.file_label = QLabel()
-        self.gb_layout.addWidget(self.file_label, 0, 3, 1, 1)
+        self.gb_layout.addWidget(QLabel('\tDark Theme'), 0, 2, 1, 1)
+        self.skin_toggle = AnimatedToggle(checked_color="#4682B4", pulse_checked_color="#44FFB000")
+        self.skin_toggle.clicked.connect(lambda: self.__manage_skin__())
+        self.gb_layout.addWidget(self.skin_toggle, 0, 3, 1, 1, Qt.AlignRight)
         self.gb_layout.addWidget(QLabel(), 0, 4, 1, 1)
-        self.frame_counter_label = QLabel()
-        self.gb_layout.addWidget(self.frame_counter_label, 0, 5, 1, 1)
+        self.file_label = QLabel()
+        self.gb_layout.addWidget(self.file_label, 0, 5, 1, 1)
         self.gb_layout.addWidget(QLabel(), 0, 6, 1, 1)
+        self.frame_counter_label = QLabel()
+        self.gb_layout.addWidget(self.frame_counter_label, 0, 7, 1, 1)
+        self.gb_layout.addWidget(QLabel(), 0, 8, 1, 1)
         self.eta_label = QLabel()
-        self.gb_layout.addWidget(self.eta_label, 0, 7, 1, 1)
-
+        self.gb_layout.addWidget(self.eta_label, 0, 9, 1, 1)
         self.layout.addWidget(self.gb, 2, 0, 1, 2, Qt.AlignTop)
+
+
+    #function to change UI skin
+    def __manage_skin__(self):
+
+        if self.skin_toggle.isChecked():
+            self.app.setStyleSheet(qdarkstyle.load_stylesheet())
+        else:
+            self.app.setStyleSheet(None)
 
 
     #function to select video file
@@ -386,9 +402,12 @@ if __name__ == '__main__':
     #creating application
     app = QApplication(sys.argv)
 
+    #setting dark stylesheet
+    #app.setStyleSheet(qdarkstyle.load_stylesheet())
+
     #displaying splash screen
     splash(app)
 
     #displaying application
-    widget = VideoEnhancer()
+    widget = VideoEnhancer(app=app)
     sys.exit(app.exec_())
