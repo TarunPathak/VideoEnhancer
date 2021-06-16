@@ -148,6 +148,26 @@ class VideoEnhancer(QWidget):
         return QPixmap.fromImage(img)
 
 
+    #function to remove noise
+    def __remove_noise__(self, frame):
+
+        #bilateral filter to reduce noise and smoothen image
+        #the filter keeps edges intact
+        bf_frame = cv2.bilateralFilter(frame, 9, 50, 50)
+        bf_psnr = cv2.PSNR(bf_frame, frame)
+
+        #NLM noise removal
+        nlm_frame = cv2.fastNlMeansDenoisingColored(bf_frame, None, 30, 0, 7, 21)
+        nlm_psnr = cv2.PSNR(nlm_frame, bf_frame)
+
+        #returning frame whose psnr is high
+        #higher psnr = better image quality
+        if nlm_psnr > bf_psnr:
+            return nlm_frame
+        else:
+            return bf_frame
+
+
     #function to sharpen image
     def __sharpen__(self, image, sigma=5, strength=1):
 
@@ -288,33 +308,30 @@ class VideoEnhancer(QWidget):
                 #copying frame
                 frame_copy = frame
 
+                #Mandatory Cleanup
+                #-----------------
+
+                #removing noise
+                modified_frame = self.__remove_noise__(frame_copy)
+
+                #sharpening image
+                modified_frame = self.__sharpen__(modified_frame, sigma=1)
+
+                #User Selected Actions
+                #---------------------
+
                 #stablizing frame
                 #if specified by user
                 if self.preferences['Enable Stablization']:
 
-                    stabilized_frame = stab.stabilize(frame_copy)
+                    stabilized_frame = stab.stabilize(modified_frame)
 
                     #wait for stabilizer which still be initializing
                     if stabilized_frame is None:
                         continue
 
                     #replacing frame
-                    frame_copy = stabilized_frame
-
-                #sharpening image
-
-                modified_frame = self.__sharpen__(frame_copy, sigma=1)
-                sharpen_psnr = cv2.PSNR(frame, modified_frame)
-
-                #bilateral filter to reduce noise and smoothen image
-                #the filter keeps edges intact
-                #only implemented if psnr is high
-                #higher psnr = better image quality
-                bf_frame = cv2.bilateralFilter(modified_frame, 9, 50, 50)
-                bf_psnr = cv2.PSNR(modified_frame, bf_frame)
-
-                if bf_psnr > sharpen_psnr:
-                    modified_frame = bf_frame
+                    modified_frame = stabilized_frame
 
                 #converting to B&W
                 #if specified by user in preferences
